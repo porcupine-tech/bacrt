@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-Page Baccarat</title>
+    <style>
+        /* --- 1. General Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #0b4a2b; /* Casino green */
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #0f5e38;
+            border-radius: 20px;
+            border: 5px solid #c9a44c;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #f3dfa2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+            margin-top: 0;
+        }
+
+        /* --- 2. Game Table Area --- */
+        .table {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start; /* Aligns content to the top */
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px 10px;
+            min-height: 250px; /* Increased height for bet zones */
+            position: relative;
+        }
+
+        .hand-area {
+            width: 30%; /* Reduced width to make space for a center area */
+            text-align: center;
+        }
+        
+        /* Center area for Tie Bet Zone */
+        .hand-area.center-area {
+            width: 30%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .hand-area h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            color: #f3dfa2;
+        }
+        
+        .hand-area h2 .score {
+            font-weight: 900;
+            display: inline-block;
+            min-width: 30px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        
+        /* Betting Zones for chips */
+        .betting-zone {
+            height: 60px; /* Space for the chip stack */
+            margin: 10px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed rgba(255, 255, 255, 0.3); /* Visual bet box */
+            border-radius: 5px;
+            width: 100%;
+            max-width: 150px;
+        }
+
+        /* Chip Styles */
+        .chip-stack {
+            position: relative;
+            width: 50px; /* Chip size */
+            height: 50px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: scale(1.2); /* Make chip stand out */
+            animation: placeChip 0.5s ease-out;
+            transition: all 0.2s;
+        }
+
+        .chip-stack::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Chip Colors based on bet type (using original button colors) */
+        .chip-player {
+            background-color: #007bff; /* Blue */
+        }
+
+        .chip-banker {
+            background-color: #dc3545; /* Red */
+        }
+
+        .chip-tie {
+            background-color: #28a745; /* Green */
+            font-size: 0.8rem;
+        }
+
+        @keyframes placeChip {
+            0% { transform: scale(0.5) translateY(-50px); opacity: 0; }
+            100% { transform: scale(1.2) translateY(0); opacity: 1; }
+        }
+
+        /* --- CARD STYLES --- */
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 120px;
+        }
+
+        .card {
+            width: 75px; /* Wider */
+            height: 105px; /* Taller */
+            background-color: #fcfcfc; /* Near white */
+            border: 1px solid #333; /* Darker border */
+            border-radius: 6px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            
+            font-weight: bold;
+            padding: 5px;
+            box-sizing: border-box;
+            position: relative; /* Crucial for positioning the corner text */
+        }
+        
+        .card.red {
+            color: #D90000;
+        }
+        
+        .card.black {
+            color: #111111;
+        }
+
+        /* Corner Value/Suit Placement */
+        .card-corner {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            text-align: left;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        
+
+        /* Large Center Suit Placement */
+        .card-suit {
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-55%, -60%); 
+            margin-top: 10px;    
+            margin-left: 10px;   
+            font-size: 5rem; 
+            line-height: 1;
+        }
+        
+        .card-value {
+            display: none; 
+        }
+        
+        .card-suit:nth-child(3) {
+            display: none;
+        }
+        
+
+        /* --- 3. Controls & Betting Area --- */
+        .controls {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 2px solid #c9a44c;
+            margin-top: 20px;
+        }
+
+        .balance {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .balance-amount {
+            color: #80ff80; /* Bright green for money */
+        }
+
+        .betting-area {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bet-input {
+            width: 120px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+
+        .bet-btn {
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .bet-btn.player {
+            background-color: #007bff;
+            color: white;
+            border-bottom-color: #0056b3;
+        }
+
+        .bet-btn.banker {
+            background-color: #dc3545;
+            color: white;
+            border-bottom-color: #a71d2a;
+        }
+
+        .bet-btn.tie {
+            background-color: #28a745;
+            color: white;
+            border-bottom-color: #1e7e34;
+        }
+        
+        .bet-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .bet-btn.active {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Style for the Recall button */
+        #recall-button {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #6c757d; /* Gray color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 3px solid #4a5056;
+            margin-right: 15px; /* Space between Recall and Deal */
+        }
+
+        #recall-button:hover {
+            background-color: #5a6268;
+        }
+        
+        #recall-button:disabled {
+            background-color: #3e444a;
+            border-bottom-color: #292d30;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        #deal-button {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #c9a44c;
+            color: #2b2b2b;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 3px solid #9c7b2e;
+        }
+
+        #deal-button:hover {
+            background-color: #d4b36a;
+        }
+
+        #deal-button:disabled {
+            background-color: #6c757d;
+            border-bottom-color: #4a5056;
+            cursor: not-allowed;
+        }
+
+        /* --- 4. Message Area --- */
+        .message-area {
+            text-align: center;
+            margin-top: 15px;
+            height: 30px; /* Reserve space */
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f3dfa2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Baccarat</h1>
+
+        <div class="table">
+            <div class="hand-area">
+                <h2>Player <span class="score" id="player-score">0</span></h2>
+                <div class="betting-zone" id="player-bet-zone"></div>
+                <div class="cards" id="player-hand">
+                    </div>
+            </div>
+            
+            <div class="hand-area center-area">
+                <div class="betting-zone" id="tie-bet-zone"></div>
+            </div>
+
+            <div class="hand-area">
+                <h2>Banker <span class="score" id="banker-score">0</span></h2>
+                <div class="betting-zone" id="banker-bet-zone"></div>
+                <div class="cards" id="banker-hand">
+                    </div>
+            </div>
+        </div>
+
+        <div class="message-area" id="message">Place your bet to start the game.</div>
+
+        <div class="controls">
+            <div class="balance">Balance: <span class="balance-amount" id="balance">$1000</span></div>
+            
+            <div class="betting-area">
+                <input type="number" id="bet-amount" value="50" min="1" class="bet-input">
+                <button class="bet-btn player" id="bet-player-btn">Bet Player</button>
+                <button class="bet-btn banker" id="bet-banker-btn">Bet Banker</button>
+                <button class="bet-btn tie" id="bet-tie-btn">Bet Tie (8:1)</button>
+            </div>
+            
+            <button id="recall-button" disabled>Recall Chips</button>
+            <button id="deal-button" disabled>Deal</button>
+        </div>
+    </div>
+    
+    <audio id="bgm" src="audio/Swing-Haven-1-bgm-cutloop.mp3" preload="auto" loop></audio>
+    <audio id="dealSound" src="audio/deal.mp3" preload="auto"></audio>
+    <audio id="winSound" src="win.mp3" preload="auto"></audio>
+    <audio id="loseSound" src="lose.mp3" preload="auto"></audio>
+    <audio id="chipsSound" src="audio/poker-chips-sfx-3-short.mp3" preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // *** NEW: Server Endpoint URL ***
+            const SERVER_URL = 'http://localhost:3000/api/balance'; 
+
+            // --- 1. State Variables (MODIFIED: Balance is initialized to 0) ---
+            let deck = [];
+            let playerHand = [];
+            let bankerHand = [];
+            let playerScore = 0;
+            let bankerScore = 0;
+            let balance = 0; // Balance starts at 0, will be loaded from server
+            let currentBets = { Player: 0, Banker: 0, Tie: 0 }; // Multi-bet state object
+            let gameInProgress = false;
+
+            // --- 2. DOM Elements (NO CHANGES) ---
+            const playerHandEl = document.getElementById('player-hand');
+            const bankerHandEl = document.getElementById('banker-hand');
+            const playerScoreEl = document.getElementById('player-score');
+            const bankerScoreEl = document.getElementById('banker-score');
+            const balanceEl = document.getElementById('balance');
+            const messageEl = document.getElementById('message');
+            const dealButton = document.getElementById('deal-button');
+            const recallButton = document.getElementById('recall-button'); 
+            const betAmountInput = document.getElementById('bet-amount');
+            const betPlayerBtn = document.getElementById('bet-player-btn');
+            const betBankerBtn = document.getElementById('bet-banker-btn');
+            const betTieBtn = document.getElementById('bet-tie-btn');
+            const allBetBtns = [betPlayerBtn, betBankerBtn, betTieBtn];
+            
+            // Betting Zone Elements
+            const playerBetZoneEl = document.getElementById('player-bet-zone');
+            const bankerBetZoneEl = document.getElementById('banker-bet-zone');
+            const tieBetZoneEl = document.getElementById('tie-bet-zone');
+            
+            // Audio Elements
+            const bgm = document.getElementById('bgm');
+            const dealSound = document.getElementById('dealSound');
+            const winSound = document.getElementById('winSound');
+            const loseSound = document.getElementById('loseSound');
+            const chipsSound = document.getElementById('chipsSound');
+
+
+            // --- 3. Core Game Logic Functions (ADD SERVER API FUNCTIONS) ---
+
+            /** Fetches the balance from the server. */
+            async function loadBalanceFromServer() {
+                try {
+                    const response = await fetch(SERVER_URL);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    // Update the global balance variable and convert to float
+                    balance = parseFloat(data.balance); 
+                    updateUI();
+                } catch (error) {
+                    console.error("Error loading balance:", error);
+                    postMessage("Error connecting to server. Using temporary $1000 balance.");
+                    balance = 1000.00; // Fallback balance
+                    updateUI();
+                }
+            }
+
+            /** Sends the current balance to the server for saving. */
+            async function saveBalanceToServer() {
+                try {
+                    await fetch(SERVER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        // Send the balance, ensuring it's a clean number for the server
+                        body: JSON.stringify({ balance: parseFloat(balance.toFixed(2)) }), 
+                    });
+                } catch (error) {
+                    console.error("Error saving balance:", error);
+                }
+            }
+
+
+            /** Creates a new deck of 52 cards (or multiple decks). */
+            function createDeck() {
+                deck = [];
+                const suits = ['♠', '♥', '♦', '♣'];
+                const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+                const decksToUse = 6;
+
+                for (let d = 0; d < decksToUse; d++) {
+                    for (const suit of suits) {
+                        for (const val of values) {
+                            let baccaratValue = 0;
+                            if (val === 'A') {
+                                baccaratValue = 1;
+                            } else if (['10', 'J', 'Q', 'K'].includes(val)) {
+                                baccaratValue = 0;
+                            } else {
+                                baccaratValue = parseInt(val);
+                            }
+                            deck.push({ display: val, suit: suit, value: baccaratValue });
+                        }
+                    }
+                }
+            }
+
+            /** Shuffles the deck using Fisher-Yates algorithm. */
+            function shuffleDeck() {
+                for (let i = deck.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [deck[i], deck[j]] = [deck[j], deck[i]];
+                }
+            }
+            
+            /** Calculates the Baccarat total for a hand. */
+            function calculateHandTotal(hand) {
+                const total = hand.reduce((sum, card) => sum + card.value, 0);
+                return total % 10;
+            }
+
+            /** Utility to pause execution for animations. */
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            
+            /** Plays the given audio element. */
+            function playSound(audioElement) {
+                audioElement.pause();
+                audioElement.currentTime = 0;
+                audioElement.play().catch(e => console.log("Audio playback failed:", e));
+            }
+            
+            /** Function to attempt BGM playback */
+            function startBGM() {
+                bgm.volume = 0.3; // Set volume lower so it doesn't overpower sfx
+                bgm.play().catch(error => {
+                    console.log("BGM Playback Failed (Autoplay Blocked):", error);
+                });
+            }
+            
+            /** Updates the message display. */
+            function postMessage(msg) {
+                messageEl.textContent = msg;
+            }
+            
+            /**
+             * Renders the chip stack for a single bet type in its zone.
+             */
+            function renderChipInZone(betType, amount) {
+                let zoneEl;
+                let zoneClass = '';
+                if (betType === 'Player') { zoneEl = playerBetZoneEl; zoneClass = 'chip-player'; }
+                else if (betType === 'Banker') { zoneEl = bankerBetZoneEl; zoneClass = 'chip-banker'; }
+                else if (betType === 'Tie') { zoneEl = tieBetZoneEl; zoneClass = 'chip-tie'; }
+                
+                zoneEl.innerHTML = ''; // Clear the current chip stack in this zone
+                
+                if (amount > 0) {
+                    const chip = document.createElement('div');
+                    chip.className = `chip-stack ${zoneClass}`;
+                    // Use toFixed(2) for chip display as balance is now float
+                    chip.textContent = `$${amount.toFixed(2)}`;
+                    zoneEl.appendChild(chip);
+                }
+            }
+
+            /** Clears the chips from the table. */
+            function clearBetZones() {
+                playerBetZoneEl.innerHTML = '';
+                bankerBetZoneEl.innerHTML = '';
+                tieBetZoneEl.innerHTML = '';
+            }
+
+            /**
+             * Handles placing a bet. Allows multiple bets to be placed. (FIXED)
+             */
+            function placeBet(type) {
+                if (gameInProgress) return;
+
+                const amount = parseFloat(betAmountInput.value); // Use parseFloat as balance is float
+                
+                if (isNaN(amount) || amount <= 0) {
+                    postMessage("Please enter a valid bet amount.");
+                    return;
+                }
+                
+                // Check if adding this bet exceeds balance
+                const totalCurrentBets = currentBets.Player + currentBets.Banker + currentBets.Tie;
+                if (totalCurrentBets + amount > balance) {
+                    postMessage("You don't have enough balance for this combined bet.");
+                    return;
+                }
+
+                // 1. Update State: Add to the existing bet amount
+                currentBets[type] += amount;
+                
+                // 2. Graphical Chip Placement
+                renderChipInZone(type, currentBets[type]); // Update the specific chip stack
+                
+                // Play the chips sound effect
+                playSound(chipsSound);
+
+                // 3. UI and Message
+                dealButton.disabled = false;
+                recallButton.disabled = false; // Enable recall button
+                postMessage(`Total bet on ${type}: $${currentBets[type].toFixed(2)}. Click to add more or Deal.`);
+                
+                // Remove the 'active' class as multiple buttons can now be conceptually active
+                allBetBtns.forEach(btn => btn.classList.remove('active'));
+            }
+
+            /**
+             * Function to recall all placed chips. (BUG FIXED)
+             */
+            function recallChips() {
+                if (gameInProgress) return;
+
+                const recalledAmount = currentBets.Player + currentBets.Banker + currentBets.Tie;
+                
+                if (recalledAmount > 0) {
+                    // 1. Reset the bet state
+                    currentBets = { Player: 0, Banker: 0, Tie: 0 };
+                    
+                    // 2. Clear the chips graphically
+                    clearBetZones();
+                    
+                    // 3. Update UI and buttons
+                    updateUI();
+                    dealButton.disabled = true;
+                    recallButton.disabled = true;
+                    postMessage(`Recalled $${recalledAmount.toFixed(2)}. Place a new bet.`);
+                    playSound(chipsSound); // Play a sound for recalling
+                } else {
+                    postMessage("No chips placed to recall.");
+                }
+            }
+
+
+            /** Main game loop function. */
+            async function dealGame() {
+                const totalBetAmount = currentBets.Player + currentBets.Banker + currentBets.Tie;
+                if (gameInProgress || totalBetAmount === 0) return; 
+
+                gameInProgress = true;
+                toggleControls(true); // Disable controls
+                
+                // Take the total bet from balance
+                balance -= totalBetAmount;
+                updateUI();
+                
+                // Check if deck is low
+                if (deck.length < 20) {
+                    createDeck();
+                    shuffleDeck();
+                    postMessage("Shuffling new deck...");
+                    await sleep(1000);
+                }
+
+                // 1. Reset hands and UI
+                playerHand = [];
+                bankerHand = [];
+                postMessage("Dealing cards...");
+                
+                // 2. Initial Deal (2 cards each)
+                await sleep(500);
+                playerHand.push(deck.pop());
+                updateUI();
+                playSound(dealSound);
+                
+                await sleep(500);
+                bankerHand.push(deck.pop());
+                updateUI();
+                playSound(dealSound);
+                
+                await sleep(500);
+                playerHand.push(deck.pop());
+                updateUI();
+                playSound(dealSound);
+                
+                await sleep(500);
+                bankerHand.push(deck.pop());
+                updateUI();
+                playSound(dealSound);
+                
+                playerScore = calculateHandTotal(playerHand);
+                bankerScore = calculateHandTotal(bankerHand);
+                updateUI();
+                
+                // 3. Check for Natural (8 or 9)
+                if (playerScore >= 8 || bankerScore >= 8) {
+                    postMessage("Natural!");
+                    await sleep(1500);
+                    endGame();
+                    return;
+                }
+                
+                // 4. Player's Turn (Third Card Rule)
+                let playerDrew = false;
+                let playerThirdCardValue = null;
+                
+                if (playerScore <= 5) {
+                    postMessage("Player draws...");
+                    await sleep(1500);
+                    const thirdCard = deck.pop();
+                    playerHand.push(thirdCard);
+                    playerThirdCardValue = thirdCard.value;
+                    playerScore = calculateHandTotal(playerHand);
+                    playerDrew = true;
+                    updateUI();
+                    playSound(dealSound);
+                } else {
+                    postMessage("Player stands.");
+                    await sleep(1500);
+                }
+                
+                // 5. Banker's Turn (Third Card Rule)
+                const bankerNeedsToDraw = checkBankerDraw(playerDrew, playerThirdCardValue);
+                
+                if (bankerNeedsToDraw) {
+                    postMessage("Banker draws...");
+                    await sleep(1500);
+                    bankerHand.push(deck.pop());
+                    bankerScore = calculateHandTotal(bankerHand);
+                    updateUI();
+                    playSound(dealSound);
+                } else {
+                    postMessage("Banker stands.");
+                    await sleep(1500);
+                }
+                
+                // 6. End the game
+                await sleep(500);
+                endGame();
+            }
+            
+            /** Contains the complex Banker drawing logic. */
+            function checkBankerDraw(playerDrew, playerThirdCardValue) {
+                if (!playerDrew) {
+                    return (bankerScore <= 5);
+                }
+                
+                switch (bankerScore) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        return true;
+                    case 3:
+                        return (playerThirdCardValue !== 8);
+                    case 4:
+                        return [2, 3, 4, 5, 6, 7].includes(playerThirdCardValue);
+                    case 5:
+                        return [4, 5, 6, 7].includes(playerThirdCardValue);
+                    case 6:
+                        return [6, 7].includes(playerThirdCardValue);
+                    case 7:
+                        return false; 
+                    default:
+                        return false;
+                }
+            }
+            
+            /**
+             * Determines the winner, calculates payouts for all bets, and resets the table. (UPDATED FOR MULTI-BET)
+             */
+            function endGame() {
+                let winner = null;
+                let netChange = 0; 
+                
+                if (playerScore > bankerScore) {
+                    winner = 'Player';
+                } else if (bankerScore > playerScore) {
+                    winner = 'Banker';
+                } else {
+                    winner = 'Tie';
+                }
+                
+                // --- Payout Calculation for Multiple Bets ---
+                const betsToResolve = currentBets;
+                
+                if (betsToResolve.Player > 0) {
+                    if (winner === 'Player') {
+                        // Player bet wins 1:1, return original + profit
+                        const winAmount = betsToResolve.Player * 2; 
+                        balance += winAmount;
+                        netChange += betsToResolve.Player;
+                    } else if (winner === 'Tie') {
+                        // Push: Player bet returns original stake
+                        balance += betsToResolve.Player;
+                    } else {
+                        // Loss: Already removed from balance
+                        netChange -= betsToResolve.Player;
+                    }
+                }
+
+                if (betsToResolve.Banker > 0) {
+                    if (winner === 'Banker') {
+                        // Banker bet wins 0.95:1, return original + profit (5% commission)
+                        const winAmount = betsToResolve.Banker * 1.95; 
+                        balance += winAmount;
+                        netChange += betsToResolve.Banker * 0.95;
+                    } else if (winner === 'Tie') {
+                        // Push: Banker bet returns original stake
+                        balance += betsToResolve.Banker;
+                    } else {
+                        // Loss: Already removed from balance
+                        netChange -= betsToResolve.Banker;
+                    }
+                }
+                
+                if (betsToResolve.Tie > 0) {
+                    if (winner === 'Tie') {
+                        // Tie bet wins 8:1, return original + profit
+                        const winAmount = betsToResolve.Tie * 9; 
+                        balance += winAmount;
+                        netChange += betsToResolve.Tie * 8;
+                    } else {
+                        // Loss: Already removed from balance
+                        netChange -= betsToResolve.Tie;
+                    }
+                }
+                // --- End Payout Calculation ---
+
+                // Post final message
+                let winLossMsg = netChange >= 0 ? `You won $${netChange.toFixed(2)}` : `You lost $${Math.abs(netChange).toFixed(2)}`;
+                
+                postMessage(`${winner} wins. ${winLossMsg}.`);
+                
+                // Play sound based on overall net change
+                if (netChange > 0) {
+                    playSound(winSound);
+                } else if (netChange < 0) {
+                    playSound(loseSound);
+                }
+                
+                // Reset for next hand
+                currentBets = { Player: 0, Banker: 0, Tie: 0 }; // Reset the multi-bet state
+                gameInProgress = false;
+                toggleControls(false); // Enable controls
+                allBetBtns.forEach(btn => btn.classList.remove('active'));
+                
+                if (balance <= 0) {
+                    postMessage("You're out of money! Reload to play again.");
+                    dealButton.disabled = true;
+                }
+                
+                clearBetZones(); // Clears the chips from the table
+                updateUI();
+            }
+            
+            /**
+             * Toggles all inputs and buttons during the game. (UPDATED FOR RECALL BUTTON)
+             */
+            function toggleControls(disabled) {
+                dealButton.disabled = disabled;
+                recallButton.disabled = disabled; 
+                betAmountInput.disabled = disabled;
+                allBetBtns.forEach(btn => btn.disabled = disabled);
+                
+                // Special case: deal/recall buttons stay disabled until at least one bet is placed
+                if (disabled === false) {
+                    const totalCurrentBets = currentBets.Player + currentBets.Banker + currentBets.Tie;
+                    const isDisabled = (totalCurrentBets === 0);
+                    dealButton.disabled = isDisabled;
+                    recallButton.disabled = isDisabled;
+                }
+            }
+
+
+            // --- 4. UI Rendering Functions (MODIFIED FOR SERVER) ---
+
+            /** Re-draws the entire UI based on the current state. */
+            function updateUI() {
+                // *** NEW: Save the balance to the running server ***
+                saveBalanceToServer(); 
+                
+                // Update scores
+                playerScoreEl.textContent = calculateHandTotal(playerHand);
+                bankerScoreEl.textContent = calculateHandTotal(bankerHand);
+                
+                // *** MODIFIED: Update balance, showing two decimal places ***
+                balanceEl.textContent = `$${balance.toFixed(2)}`;
+                
+                // Render hands
+                renderHand(playerHand, playerHandEl);
+                renderHand(bankerHand, bankerHandEl);
+            }
+            
+            /** Renders the cards for a specific hand. */
+            function renderHand(hand, element) {
+                element.innerHTML = ''; // Clear existing cards
+                if (hand.length === 0) {
+                    element.innerHTML = '';
+                    return;
+                }
+                
+                for (const card of hand) {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card';
+                    
+                    const suitColor = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
+                    cardDiv.classList.add(suitColor);
+                    
+                    // Set data attribute for the bottom-right pseudo-element
+                    cardDiv.setAttribute('data-corner', `${card.display}${card.suit}`);
+                    
+                    // The corner text (value + small suit) is separate from the large center suit
+                    cardDiv.innerHTML = `
+                        <span class="card-corner">${card.display}${card.suit}</span>
+                        <span class="card-suit">${card.suit}</span>
+                        <span class="card-value">${card.display}</span> 
+                        `;
+                    element.appendChild(cardDiv);
+                }
+            }
+            
+            // --- 5. Initial Setup & Event Listeners (CORRECTED) ---
+            
+            // BGM Playback on Interaction
+            const attemptBGMStart = () => {
+                startBGM();
+                document.body.removeEventListener('click', attemptBGMStart);
+                document.body.removeEventListener('touchstart', attemptBGMStart);
+            };
+
+            document.body.addEventListener('click', attemptBGMStart);
+            document.body.addEventListener('touchstart', attemptBGMStart);
+            
+            // Existing listeners
+            betPlayerBtn.addEventListener('click', () => placeBet('Player'));
+            betBankerBtn.addEventListener('click', () => placeBet('Banker'));
+            betTieBtn.addEventListener('click', () => placeBet('Tie'));
+            dealButton.addEventListener('click', dealGame);
+            
+            // NEW: Recall button listener
+            recallButton.addEventListener('click', recallChips);
+            
+            startBGM(); 
+            
+            // Initialize game
+            createDeck();
+            shuffleDeck();
+            
+            // *** CRITICAL CHANGE: Load balance asynchronously, which calls updateUI() *after* fetch completes ***
+            loadBalanceFromServer(); 
+        });
+    </script>
+
+</body>
+</html>
